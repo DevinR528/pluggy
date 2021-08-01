@@ -19,6 +19,7 @@ pub struct Lifetime {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum ParamName {
     /// Some user-given name like `T` or `'x`.
     Plain(Ident),
@@ -55,6 +56,7 @@ impl ParamName {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum LifetimeName {
     /// User-given names or fresh (synthetic) names.
     Param(ParamName),
@@ -150,6 +152,7 @@ impl PathSegment {
 
 /// What kind of definition something is; e.g., `mod` vs `struct`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum DefKind {
     // Type namespace
     Mod,
@@ -247,6 +250,7 @@ pub enum DefKind {
 ///   pointing to the definition of `str_to_string` in the current crate.
 //
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum Res<Id = HirId> {
     /// Definition having a unique ID (`DefId`), corresponds to something defined in user
     /// code.
@@ -358,6 +362,7 @@ pub struct AnonConst {
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Copy)]
+#[non_exhaustive]
 pub enum Mutability {
     Mut,
     Not,
@@ -372,6 +377,8 @@ pub struct MutTy {
 }
 
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
+#[non_exhaustive]
 pub enum FnRetTy {
     /// Return type is not specified.
     ///
@@ -384,6 +391,7 @@ pub enum FnRetTy {
 }
 
 #[derive(Copy, Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum ImplicitSelfKind {
     /// Represents a `fn x(self);`.
     Imm,
@@ -411,18 +419,21 @@ pub struct FnDecl {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
+#[non_exhaustive]
 pub enum IsAsync {
     Async,
     NotAsync,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[non_exhaustive]
 pub enum Unsafety {
     Unsafe,
     Normal,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
+#[non_exhaustive]
 pub enum Constness {
     Const,
     NotConst,
@@ -452,6 +463,7 @@ pub struct ConstArg {
 }
 
 #[derive(Copy, Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum InferKind {
     Const,
     Type,
@@ -465,6 +477,7 @@ pub struct InferArg {
 }
 
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum GenericArg {
     Lifetime(Lifetime),
     Type(Ty),
@@ -536,6 +549,7 @@ impl GenericArgs {
 /// A modifier on a bound, currently this is only used for `?Sized`, where the
 /// modifier is `Maybe`. Negative bounds should also be handled here.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum TraitBoundModifier {
     None,
     Maybe,
@@ -547,6 +561,7 @@ pub enum TraitBoundModifier {
 /// the "special" built-in traits (see `middle::lang_items`) and
 /// detects `Copy`, `Send` and `Sync`.
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum GenericBound {
     Trait(PolyTraitRef, TraitBoundModifier),
     // FIXME(davidtwco): Introduce `PolyTraitRef::LangItem`
@@ -574,6 +589,7 @@ impl GenericBound {
 pub type GenericBounds = Vec<GenericBound>;
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
+#[non_exhaustive]
 pub enum LifetimeParamKind {
     // Indicates that the lifetime definition was explicitly declared (e.g., in
     // `fn foo<'a>(x: &'a u8) -> &'a u8 { x }`).
@@ -593,6 +609,7 @@ pub enum LifetimeParamKind {
 }
 
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum GenericParamKind {
     /// A lifetime definition (e.g., `'a: 'b + 'c + 'd`).
     Lifetime {
@@ -632,6 +649,7 @@ impl GenericParam {
 /// Synthetic type parameters are converted to another form during lowering; this allows
 /// us to track the original form they had, and is useful for error messages.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum SyntheticTyParamKind {
     ImplTrait,
     // Created by the `#[rustc_synthetic]` attribute.
@@ -654,6 +672,7 @@ impl WhereClause {
 
 /// A single predicate in a where-clause.
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum WherePredicate {
     /// A type binding (e.g., `for<'c> Foo: Send + Clone + 'c`).
     BoundPredicate(WhereBoundPredicate),
@@ -712,6 +731,7 @@ impl Generics {
 }
 
 #[derive(Copy, Clone, PartialEq, Debug, Hash)]
+#[non_exhaustive]
 pub enum UseKind {
     /// One import, e.g., `use foo::bar` or `use foo::bar as baz`.
     /// Also produced for each element of a list `use`, e.g.
@@ -764,6 +784,7 @@ pub struct PolyTraitRef {
 }
 
 #[derive(Copy, Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum CrateSugar {
     /// Source is `pub(crate)`.
     PubCrate,
@@ -774,6 +795,7 @@ pub enum CrateSugar {
 pub type Visibility = Spanned<VisibilityKind>;
 
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum VisibilityKind {
     Public,
     Crate(CrateSugar),
@@ -791,6 +813,7 @@ pub struct Mod {
 }
 
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum ItemKind {
     ExternCrate(Option<Symbol>),
     /// `use foo::bar::*;` or `use foo::bar::baz as quux;`
@@ -880,6 +903,7 @@ pub struct Item {
 
 /// Syntax used to declare a trait object.
 #[derive(Clone, Copy, PartialEq, Debug, Hash)]
+#[non_exhaustive]
 pub enum TraitObjectSyntax {
     Dyn,
     None,
@@ -887,6 +911,7 @@ pub enum TraitObjectSyntax {
 
 /// Not represented directly in the AST; referred to by name through a `ty_path`.
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum PrimTy {
     Int(IntTy),
     Uint(UintTy),
@@ -897,6 +922,7 @@ pub enum PrimTy {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum IntTy {
     I8,
     I16,
@@ -907,6 +933,7 @@ pub enum IntTy {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum UintTy {
     U8,
     U16,
@@ -917,6 +944,7 @@ pub enum UintTy {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+#[non_exhaustive]
 pub enum FloatTy {
     F32,
     F64,
@@ -948,6 +976,7 @@ pub struct TypeBinding {
 
 // Represents the two kinds of type bindings.
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum TypeBindingKind {
     /// E.g., `Foo<Bar: Send>`.
     Constraint { bounds: Vec<GenericBound> },
@@ -970,6 +999,7 @@ impl TypeBinding {
 ///
 /// [`qpath_res`]: ../rustc_middle/ty/struct.TypeckResults.html#method.qpath_res
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum QPath {
     /// Path to a definition, optionally "fully-qualified" with a `Self`
     /// type, if the path points to an associated item in a trait.
@@ -1002,6 +1032,7 @@ pub struct BareFnTy {
 
 /// The various kinds of types recognized by the compiler.
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum TyKind {
     /// A variable length slice (i.e., `[T]`).
     Slice(Ty),
@@ -1048,6 +1079,7 @@ pub struct Ty {
 }
 
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub enum Node {
     Item(Item),
     Ty(Ty),

@@ -52,6 +52,7 @@ pub struct Lint {
 /// suggestion to determine whether it should be automatically applied or if the user
 /// should be consulted before applying the suggestion.
 #[derive(Copy, Clone, Debug, PartialEq, Hash)]
+#[non_exhaustive]
 pub enum Applicability {
     /// The suggestion is definitely what the user intended, or maintains the exact
     /// meaning of the code. This suggestion should be automatically applied.
@@ -76,6 +77,7 @@ pub enum Applicability {
 
 /// Setting for how to handle a lint.
 #[derive(Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Debug, Hash)]
+#[non_exhaustive]
 pub enum Level {
     Allow,
     Warn,
@@ -85,6 +87,7 @@ pub enum Level {
 
 /// Extra information for a future incompatibility lint.
 #[derive(Copy, Clone, Debug)]
+#[non_exhaustive]
 pub struct FutureIncompatibleInfo {
     /// e.g., a URL for an issue/PR/RFC or error code
     pub reference: &'static str,
@@ -100,6 +103,7 @@ pub struct FutureIncompatibleInfo {
 
 /// The reason for future incompatibility
 #[derive(Copy, Clone, Debug)]
+#[non_exhaustive]
 pub enum FutureIncompatibilityReason {
     /// This will be an error in a future release
     /// for all editions

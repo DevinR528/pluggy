@@ -147,7 +147,7 @@ fn toolchain_path(home: Option<String>, toolchain: Option<String>) -> Option<Pat
 #[allow(clippy::too_many_lines)]
 pub fn run() {
     // validate smartstring
-    plinter_api::validate();
+    pluggy_api::validate();
     rustc_driver::init_rustc_env_logger();
     SyncLazy::force(&ICE_HOOK);
     exit(rustc_driver::catch_with_exit_code(move || {

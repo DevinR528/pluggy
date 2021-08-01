@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 libloading = "0.7.0"
-plinter_api = { path = "../plinter_api" }
+pluggy_api = { path = "../pluggy_api" }
 
 [package.metadata.rust-analyzer]
 # This crate uses #[feature(rustc_private)]

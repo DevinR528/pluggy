@@ -1,5 +1,5 @@
 [package]
-name = "plinter"
+name = "pluggy"
 version = "0.1.0"
 edition = "2018"
 
@@ -9,4 +9,4 @@ edition = "2018"
 driver = { path = "./driver" }
 
 [workspace]
-members = ["driver", "test_lint", "plinter_api"]
+members = ["driver", "test_lint", "pluggy_api"]

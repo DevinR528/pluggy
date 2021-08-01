@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use libloading::{library_filename, Library};
-use plinter_api as stable;
+use pluggy_api as stable;
 use rustc_ast::{CrateSugar, FloatTy, IntTy, UintTy};
 use rustc_hir::{
     def::{DefKind, Res},

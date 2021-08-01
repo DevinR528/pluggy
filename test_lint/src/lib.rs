@@ -1,4 +1,4 @@
-use plinter_api::{lint::Lint, Context, ItemKind, Node};
+use pluggy_api::{lint::Lint, Context, ItemKind, Node};
 
 #[no_mangle]
 pub fn lint_plugin(cx: &dyn Context, node: Node) {
@@ -23,6 +23,7 @@ pub fn lint_plugin(cx: &dyn Context, node: Node) {
             ItemKind::Mod(_) => todo!(),
             ItemKind::TyAlias(_, _) => todo!(),
             ItemKind::LetTheDocsBeValid => todo!(),
+            _ => {}
         }
     }
 }
