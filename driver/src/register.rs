@@ -1,4 +1,4 @@
-use std::{env, path::PathBuf};
+use std::path::PathBuf;
 
 use libloading::{library_filename, Library};
 use plinter_api as stable;
@@ -14,7 +14,7 @@ use rustc_lint::{
     LintPass, LintStore,
 };
 use rustc_lint_defs::FutureIncompatibilityReason;
-use rustc_session::{declare_tool_lint, impl_lint_pass, Session};
+use rustc_session::{declare_tool_lint, Session};
 use rustc_span::{def_id::LocalDefId, edition::Edition, Pos, Span, Symbol};
 
 pub type LintFunc = for<'a> fn(&'a dyn Context, stable::Node);
@@ -155,7 +155,7 @@ impl FromStable for stable::lint::Lint {
             report_in_external_macro: self.report_in_external_macro,
             future_incompatible: self.future_incompatible.map(convert_cmp),
             is_plugin: self.is_plugin,
-            feature_gate: self.feature_gate.map(|s| Symbol::intern(&s.as_str())),
+            feature_gate: self.feature_gate.map(|s| Symbol::intern(s)),
             crate_level_only: self.crate_level_only,
         }
     }
@@ -249,10 +249,7 @@ fn convert_res(res: Res) -> stable::Res {
 
 fn convert_seg(seg: &PathSegment<'_>) -> stable::PathSegment {
     stable::PathSegment {
-        ident: stable::Ident::new(
-            stable::Symbol::intern(&seg.ident.name.as_str()),
-            convert_span(seg.ident.span),
-        ),
+        ident: stable::Ident::new(&seg.ident.name.as_str(), convert_span(seg.ident.span)),
         hir_id: seg.hir_id.map(|id| id.as_stable()),
         res: seg.res.map(convert_res),
         args: seg.args.map(convert_args),
@@ -282,7 +279,7 @@ impl<'a> IntoStable for Item<'a> {
     fn as_stable(&self) -> Self::Out {
         let item = stable::ItemBuilder {
             ident: Some(stable::Ident::new(
-                stable::Symbol::intern(&self.ident.name.as_str()),
+                &self.ident.name.as_str(),
                 convert_span(self.ident.span),
             )),
             def_id: Some(stable::LocalDefId::from_u32(
@@ -290,7 +287,7 @@ impl<'a> IntoStable for Item<'a> {
             )),
             kind: Some(match &self.kind {
                 ItemKind::ExternCrate(name) => stable::ItemKind::ExternCrate(
-                    name.map(|n| stable::Symbol::intern(&n.as_str())),
+                    name.map(|n| stable::Symbol::from(&*n.as_str())),
                 ),
                 ItemKind::Use(path, kind) => stable::ItemKind::Use(
                     convert_path(path),
@@ -376,10 +373,10 @@ impl<'tcx> LateLintPass<'tcx> for FooLint {
     }
 
     fn check_ty(&mut self, cx: &LateContext<'tcx>, ty: &'tcx Ty<'tcx>) {
-        // let call = unsafe { *self.lints.get::<LintFunc>(b"lint_plugin").unwrap() };
+        let call = unsafe { *self.lints.get::<LintFunc>(b"lint_plugin").unwrap() };
 
-        // let context = cx as &dyn Context;
-        // call(context, ty.as_stable());
+        let context = cx as &dyn Context;
+        call(context, ty.as_stable());
     }
 }
 

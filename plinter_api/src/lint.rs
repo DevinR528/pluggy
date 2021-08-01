@@ -1,4 +1,4 @@
-use crate::span::Symbol;
+use std::fmt;
 
 /// Specification of a single lint.
 #[derive(Copy, Clone, Debug)]
@@ -41,7 +41,7 @@ pub struct Lint {
     pub is_plugin: bool,
 
     /// `Some` if this lint is feature gated, otherwise `None`.
-    pub feature_gate: Option<Symbol>,
+    pub feature_gate: Option<&'static str>,
 
     pub crate_level_only: bool,
 }
@@ -219,7 +219,10 @@ impl LintId {
     pub fn of(lint: &'static Lint) -> LintId { LintId { lint } }
 
     pub fn lint_name_raw(&self) -> &'static str { self.lint.name }
+}
 
-    /// Gets the name of the lint.
-    pub fn to_string(&self) -> String { self.lint.name_lower() }
+impl fmt::Display for LintId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.lint.name_lower().fmt(f)
+    }
 }

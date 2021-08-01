@@ -4,10 +4,12 @@ use plinter_api::{lint::Lint, Context, ItemKind, Node};
 pub fn lint_plugin(cx: &dyn Context, node: Node) {
     if let Node::Item(item) = node {
         match item.kind {
-            ItemKind::ExternCrate(_) => todo!(),
-            ItemKind::Use(p, k) => cx.warn(
+            ItemKind::ExternCrate(sym) => {
+                cx.warn(&format!("{:?}", sym), Lint::new("test_lint", "hello from dylib"))
+            }
+            ItemKind::Use(p, _k) => cx.warn(
                 &format!(
-                    "warning {:?}",
+                    "{:?}",
                     p.segments
                         .iter()
                         .map(|s| s.ident.name.to_string())

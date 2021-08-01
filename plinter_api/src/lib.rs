@@ -1,19 +1,19 @@
+use std::{fmt::Debug, hash::Hash};
+
 mod hir_def;
 pub mod lint;
 mod span;
 mod utils;
 
-use std::{cell::RefCell, fmt::Debug, hash::Hash};
-
 pub use hir_def::*;
+pub use smartstring::validate;
+use smartstring::{LazyCompact, SmartString};
 pub use span::{
-    DefId, DefIndex, HirId, Ident, Interner, ItemId, ItemLocalId, LocalDefId, Span,
-    SpanData, Spanned, Symbol, SymbolStr, SyntaxContext, CRATE_DEF_INDEX, DUMMY_SP,
+    DefId, DefIndex, HirId, Ident, ItemId, ItemLocalId, LocalDefId, Span, SpanData,
+    Spanned, SyntaxContext, CRATE_DEF_INDEX, DUMMY_SP,
 };
 
-thread_local! {
-    pub(crate) static INTERN: RefCell<Interner> = RefCell::new(Interner::generate());
-}
+pub type Symbol = SmartString<LazyCompact>;
 
 pub trait Context {
     fn def_path_str(&self, id: DefId) -> String;

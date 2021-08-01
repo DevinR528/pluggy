@@ -115,6 +115,9 @@ macro_rules! newtype_index {
                 }
             }
 
+            /// ## Safety
+            ///
+            /// The `value` is not compile time checked.
             #[inline]
             $v const unsafe fn from_u32_unchecked(value: u32) -> Self {
                 Self { private: value }

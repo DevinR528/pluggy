@@ -1,11 +1,10 @@
 use crate::{
-    span::{
-        BodyId, DefId, HirId, Ident, ItemId, LocalDefId, Span, Spanned, Symbol, DUMMY_SP,
-    },
+    span::{BodyId, DefId, HirId, Ident, ItemId, LocalDefId, Span, Spanned, DUMMY_SP},
     utils::{Abi, LangItem},
+    Symbol,
 };
 
-#[derive(Copy, Clone, Debug, Hash)]
+#[derive(Clone, Debug, Hash)]
 pub struct Lifetime {
     pub hir_id: HirId,
     pub span: Span,
@@ -19,7 +18,7 @@ pub struct Lifetime {
     pub name: LifetimeName,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ParamName {
     /// Some user-given name like `T` or `'x`.
     Plain(Ident),
@@ -48,16 +47,14 @@ pub enum ParamName {
 
 impl ParamName {
     pub fn ident(&self) -> Ident {
-        match *self {
-            ParamName::Plain(ident) => ident,
-            ParamName::Fresh(_) | ParamName::Error => {
-                Ident::with_dummy_span(Symbol::intern("_"))
-            }
+        match self {
+            ParamName::Plain(ident) => ident.clone(),
+            ParamName::Fresh(_) | ParamName::Error => Ident::with_dummy_span("_"),
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LifetimeName {
     /// User-given names or fresh (synthetic) names.
     Param(ParamName),
@@ -103,8 +100,7 @@ pub struct Path {
 
 impl Path {
     pub fn is_global(&self) -> bool {
-        !self.segments.is_empty()
-            && self.segments[0].ident.name == Symbol::intern("{{root}}")
+        !self.segments.is_empty() && self.segments[0].ident.name == "{{root}}"
     }
 }
 
@@ -962,7 +958,7 @@ pub enum TypeBindingKind {
 impl TypeBinding {
     pub fn ty(&self) -> &Ty {
         match &self.kind {
-            TypeBindingKind::Equality { ty } => &ty,
+            TypeBindingKind::Equality { ty } => ty,
             _ => panic!("expected equality type binding for parenthesized generic args"),
         }
     }

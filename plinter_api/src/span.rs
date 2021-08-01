@@ -1,7 +1,6 @@
-use std::{cmp, fmt};
+use std::cmp;
 
-use fxhash::FxHashMap;
-use typed_arena::Arena;
+use crate::Symbol;
 
 /// Dummy span, both position and length are zero, syntax context is zero as well.
 pub const DUMMY_SP: Span = Span { base_or_index: 0, len_or_tag: 0, ctxt_or_zero: 0 };
@@ -297,7 +296,7 @@ pub struct ItemId {
     pub def_id: LocalDefId,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Ident {
     pub name: Symbol,
     pub span: Span,
@@ -306,169 +305,19 @@ pub struct Ident {
 impl Ident {
     #[inline]
     /// Constructs a new identifier from a symbol and a span.
-    pub const fn new(name: Symbol, span: Span) -> Ident { Ident { name, span } }
+    pub fn new(name: &str, span: Span) -> Ident {
+        Ident { name: Symbol::from(name), span }
+    }
 
     /// Constructs a new identifier with a dummy span.
     #[inline]
-    pub const fn with_dummy_span(name: Symbol) -> Ident { Ident::new(name, DUMMY_SP) }
+    pub fn with_dummy_span(name: &str) -> Ident { Ident::new(name, DUMMY_SP) }
 
     #[inline]
-    pub fn invalid() -> Ident { Ident::with_dummy_span(Symbol::intern("")) }
-
-    /// Maps a string to an identifier with a dummy span.
-    pub fn from_str(string: &str) -> Ident {
-        Ident::with_dummy_span(Symbol::intern(string))
-    }
+    pub fn invalid() -> Ident { Ident::with_dummy_span("") }
 
     /// Maps a string and a span to an identifier.
     pub fn from_str_and_span(string: &str, span: Span) -> Ident {
-        Ident::new(Symbol::intern(string), span)
+        Ident::new(string, span)
     }
-}
-
-crate::newtype_index! {
-    pub struct SymbolIndex { .. }
-}
-
-/// An interned string.
-///
-/// Internally, a `Symbol` is implemented as an index, and all operations
-/// (including hashing, equality, and ordering) operate on that index. The use
-/// of `rustc_index::newtype_index!` means that `Option<Symbol>` only takes up 4 bytes,
-/// because `rustc_index::newtype_index!` reserves the last 256 values for tagging
-/// purposes.
-///
-/// Note that `Symbol` cannot directly be a `rustc_index::newtype_index!` because it
-/// implements `fmt::Debug`, `Encodable`, and `Decodable` in special ways.
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Symbol(SymbolIndex);
-
-impl Symbol {
-    const fn new(id: u32) -> Self { Self(SymbolIndex::from_u32(id)) }
-
-    pub fn intern(s: &str) -> Self { with_interner(|intern| intern.intern(s)) }
-
-    /// Convert to a `SymbolStr`. This is a slowish operation because it
-    /// requires locking the symbol interner.
-    pub fn as_str(self) -> SymbolStr {
-        with_interner(|interner| unsafe {
-            SymbolStr { string: std::mem::transmute::<&str, &str>(interner.get(self)) }
-        })
-    }
-}
-
-impl fmt::Debug for Symbol {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.as_str(), f)
-    }
-}
-
-impl fmt::Display for Symbol {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self.as_str(), f)
-    }
-}
-
-/// An alternative to [`Symbol`], useful when the chars within the symbol need to
-/// be accessed. It deliberately has limited functionality and should only be
-/// used for temporary values.
-///
-/// Because the interner outlives any thread which uses this type, we can
-/// safely treat `string` which points to interner data, as an immortal string,
-/// as long as this type never crosses between threads.
-//
-// FIXME: ensure that the interner outlives any thread which uses `SymbolStr`,
-// by creating a new thread right after constructing the interner.
-#[derive(Clone, Eq, PartialOrd, Ord)]
-pub struct SymbolStr {
-    string: &'static str,
-}
-
-// This impl allows a `SymbolStr` to be directly equated with a `String` or
-// `&str`.
-impl<T: std::ops::Deref<Target = str>> std::cmp::PartialEq<T> for SymbolStr {
-    fn eq(&self, other: &T) -> bool { self.string == other.deref() }
-}
-
-/// This impl means that if `ss` is a `SymbolStr`:
-/// - `*ss` is a `str`;
-/// - `&*ss` is a `&str` (and `match &*ss { ... }` is a common pattern).
-/// - `&ss as &str` is a `&str`, which means that `&ss` can be passed to a function
-///   expecting a `&str`.
-impl std::ops::Deref for SymbolStr {
-    type Target = str;
-    #[inline]
-    fn deref(&self) -> &str { self.string }
-}
-
-impl fmt::Debug for SymbolStr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(self.string, f)
-    }
-}
-
-impl fmt::Display for SymbolStr {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(self.string, f)
-    }
-}
-
-// The `&'static str`s in this type actually point into the arena.
-//
-// The `FxHashMap`+`Vec` pair could be replaced by `FxIndexSet`, but #75278
-// found that to regress performance up to 2% in some cases. This might be
-// revisited after further improvements to `indexmap`.
-#[derive(Default)]
-pub struct Interner {
-    arena: Arena<u8>,
-    names: FxHashMap<&'static str, Symbol>,
-    strings: Vec<&'static str>,
-}
-
-impl Interner {
-    fn prefill(init: &[&'static str]) -> Self {
-        Interner {
-            strings: init.into(),
-            names: init.iter().copied().zip((0..).map(Symbol::new)).collect(),
-            ..Default::default()
-        }
-    }
-
-    #[inline]
-    pub fn intern(&mut self, string: &str) -> Symbol {
-        if let Some(&name) = self.names.get(string) {
-            return name;
-        }
-
-        let name = Symbol::new(self.strings.len() as u32);
-
-        let string = self.arena.alloc_str(string);
-        // It is safe to extend the arena allocation to `'static` because we only access
-        // these while the arena is still alive.
-        let string: &'static str = unsafe { &*(string as *const str) };
-        self.strings.push(string);
-        self.names.insert(string, name);
-        name
-    }
-
-    // Get the symbol as a string. `Symbol::as_str()` should be used in
-    // preference to this function.
-    pub fn get(&self, symbol: Symbol) -> &str {
-        self.strings.get(symbol.0.as_usize()).unwrap_or(&"")
-    }
-
-    pub(crate) fn generate() -> Self {
-        Self::prefill(&[
-            "", "{{root}}", "$crate", "_", "as", "break", "const", "continue", "crate",
-            "else", "enum", "extern", "false", "fn", "for", "if", "impl", "in", "let",
-            "loop", "match", "mod", "move", "mut", "pub", "ref", "return", "self",
-            "Self", "static", "struct", "super", "trait", "true", "type", "unsafe",
-            "use", "where", "while",
-        ])
-    }
-}
-
-#[inline]
-fn with_interner<T, F: FnOnce(&mut Interner) -> T>(f: F) -> T {
-    crate::INTERN.with(|locked| f(&mut *locked.borrow_mut()))
 }
