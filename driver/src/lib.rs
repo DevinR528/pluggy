@@ -27,8 +27,6 @@ use std::{
 };
 
 use rustc_interface::interface;
-use rustc_session::parse::ParseSess;
-use rustc_span::symbol::Symbol;
 
 fn arg_value<'a, T: Deref<Target = str>>(
     args: &'a [T],

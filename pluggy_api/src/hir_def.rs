@@ -1,7 +1,7 @@
 use crate::{
     span::{BodyId, DefId, HirId, Ident, ItemId, LocalDefId, Span, Spanned, DUMMY_SP},
     utils::{Abi, LangItem},
-    Symbol,
+    Context, Symbol,
 };
 
 #[derive(Clone, Debug, Hash)]
@@ -870,21 +870,21 @@ pub enum ItemKind {
 /// The name might be a dummy name in case of anonymous items
 #[derive(Clone, Debug, Hash)]
 pub struct ItemBuilder {
-    pub ident: Option<Ident>,
-    pub def_id: Option<LocalDefId>,
-    pub kind: Option<ItemKind>,
-    pub vis: Option<Visibility>,
-    pub span: Option<Span>,
+    pub ident: Ident,
+    pub def_id: LocalDefId,
+    pub kind: ItemKind,
+    pub vis: Visibility,
+    pub span: Span,
 }
 
-impl From<ItemBuilder> for Item {
-    fn from(item: ItemBuilder) -> Self {
+impl ItemBuilder {
+    pub fn into_with_ctx(self, _: &dyn Context) -> Item {
         Item {
-            ident: item.ident.unwrap(),
-            def_id: item.def_id.unwrap(),
-            kind: item.kind.unwrap(),
-            vis: item.vis.unwrap(),
-            span: item.span.unwrap(),
+            ident: self.ident,
+            def_id: self.def_id,
+            kind: self.kind,
+            vis: self.vis,
+            span: self.span,
         }
     }
 }
@@ -893,6 +893,7 @@ impl From<ItemBuilder> for Item {
 ///
 /// The name might be a dummy name in case of anonymous items
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub struct Item {
     pub ident: Ident,
     pub def_id: LocalDefId,
