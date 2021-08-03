@@ -15,6 +15,7 @@ extern crate rustc_lint;
 extern crate rustc_lint_defs;
 extern crate rustc_session;
 extern crate rustc_span;
+extern crate rustc_target;
 
 use std::{
     borrow::Cow,

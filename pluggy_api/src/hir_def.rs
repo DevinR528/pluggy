@@ -356,9 +356,21 @@ pub enum Res<Id = HirId> {
 /// You can check if this anon const is a default in a const param
 /// `const N: usize = { ... }` with `tcx.hir().opt_const_param_default_param_hir_id(..)`
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
+#[non_exhaustive]
 pub struct AnonConst {
     pub hir_id: HirId,
     pub body: BodyId,
+}
+
+pub struct AnonConstBuilder {
+    pub hir_id: HirId,
+    pub body: BodyId,
+}
+
+impl AnonConstBuilder {
+    pub fn into_with_ctx(self, _: &dyn Context) -> AnonConst {
+        AnonConst { hir_id: self.hir_id, body: self.body }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Copy)]
@@ -1072,7 +1084,9 @@ pub enum TyKind {
     Err,
 }
 
+/// Represents any type.
 #[derive(Clone, Debug, Hash)]
+#[non_exhaustive]
 pub struct Ty {
     pub hir_id: HirId,
     pub kind: Box<TyKind>,
@@ -1080,8 +1094,14 @@ pub struct Ty {
 }
 
 #[derive(Clone, Debug, Hash)]
-#[non_exhaustive]
-pub enum Node {
-    Item(Item),
-    Ty(Ty),
+pub struct TyBuilder {
+    pub hir_id: HirId,
+    pub kind: Box<TyKind>,
+    pub span: Span,
+}
+
+impl TyBuilder {
+    pub fn into_with_ctx(self, _: &dyn Context) -> Ty {
+        Ty { hir_id: self.hir_id, kind: self.kind, span: self.span }
+    }
 }
