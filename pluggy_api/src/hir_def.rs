@@ -1088,9 +1088,20 @@ pub enum TyKind {
 #[derive(Clone, Debug, Hash)]
 #[non_exhaustive]
 pub struct Ty {
-    pub hir_id: HirId,
-    pub kind: Box<TyKind>,
-    pub span: Span,
+    hir_id: HirId,
+    kind: Box<TyKind>,
+    span: Span,
+}
+
+impl Ty {
+    /// Get the `HirId` of this type.
+    pub fn hir_id(&self) -> HirId { self.hir_id }
+
+    /// Get the `TyKind` of this type.
+    pub fn kind(&self) -> &TyKind { self.kind.as_ref() }
+
+    /// Get the `Span` for this type.
+    pub fn span(&self) -> Span { self.span }
 }
 
 #[derive(Clone, Debug, Hash)]
@@ -1101,6 +1112,8 @@ pub struct TyBuilder {
 }
 
 impl TyBuilder {
+    // `&dyn Context` is used to make sure that if fields change we have access to enough
+    // info to fill the field.
     pub fn into_with_ctx(self, _: &dyn Context) -> Ty {
         Ty { hir_id: self.hir_id, kind: self.kind, span: self.span }
     }

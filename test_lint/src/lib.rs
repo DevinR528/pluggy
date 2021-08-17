@@ -20,7 +20,7 @@ declare_tool_lint! {
 pub struct LintTest(());
 
 impl_lint_pass! {
-    LintTest::default => [LINT_PLUGIN]
+    LintTest::default => [LINT_PLUGIN, MORE_GENERICS]
 }
 
 impl LateLintImpl for LintTest {
